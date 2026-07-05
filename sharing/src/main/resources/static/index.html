@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RideSphere - Intelligent Ridesharing Simulator</title>
+    <meta name="description" content="Intelligent Ridesharing System simulation with real-time matching, 10+ foreign key constraints, and automatic conflict resolution.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom Style -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                </div>
+                <h2>RideSphere</h2>
+            </div>
+            
+            <nav class="sidebar-menu">
+                <a href="#" class="menu-item active" data-tab="dashboard">
+                    <i class="fa-solid fa-chart-line"></i> Dashboard
+                </a>
+                <a href="#" class="menu-item" data-tab="map">
+                    <i class="fa-solid fa-map-location-dot"></i> Live Simulation Map
+                </a>
+                <a href="#" class="menu-item" data-tab="conflicts">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Conflict Registry
+                </a>
+                <a href="#" class="menu-item" data-tab="rides">
+                    <i class="fa-solid fa-car-side"></i> Ride Ledger
+                </a>
+                <a href="#" class="menu-item" data-tab="schema">
+                    <i class="fa-solid fa-database"></i> Schema & OOP Design
+                </a>
+                <a href="#" class="menu-item" data-tab="users">
+                    <i class="fa-solid fa-users"></i> Users & Vehicles
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="system-status">
+                    <div class="status-indicator online"></div>
+                    <span>MySQL Database Connected</span>
+                </div>
+                <div class="credentials">
+                    <small>Port: 8080 | Java 25 & Spring Boot</small>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="main-content">
+            <!-- Top Navbar -->
+            <header class="top-navbar">
+                <div class="page-title">
+                    <h1 id="tab-title-text">Dashboard Overview</h1>
+                    <p class="subtitle">System Design, OOP & DB Integrity Demo</p>
+                </div>
+                <div class="action-bar">
+                    <button class="btn btn-primary" id="btn-run-simulation">
+                        <i class="fa-solid fa-play"></i> Trigger Simulation (55 Rides)
+                    </button>
+                    <button class="btn btn-secondary" id="btn-refresh-stats">
+                        <i class="fa-solid fa-arrows-rotate"></i> Refresh
+                    </button>
+                </div>
+            </header>
+
+            <!-- Notification banner for simulation status -->
+            <div id="sim-status-banner" class="sim-banner hidden">
+                <div class="banner-spinner"></div>
+                <span id="banner-text">Running Intelligent Matching & Conflict Resolution Engine...</span>
+            </div>
+
+            <!-- Dashboard Content Tab -->
+            <div class="tab-content active" id="tab-dashboard">
+                <!-- Stats Grid -->
+                <section class="stats-grid">
+                    <div class="stat-card border-purple">
+                        <div class="stat-icon bg-purple">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </div>
+                        <div class="stat-data">
+                            <h3>Total Requests</h3>
+                            <span class="stat-val" id="stat-total-requests">-</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card border-green">
+                        <div class="stat-icon bg-green">
+                            <i class="fa-solid fa-circle-check"></i>
+                        </div>
+                        <div class="stat-data">
+                            <h3>Successful Matches</h3>
+                            <span class="stat-val" id="stat-completed-rides">-</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card border-red">
+                        <div class="stat-icon bg-red">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </div>
+                        <div class="stat-data">
+                            <h3>Resolved Conflicts</h3>
+                            <span class="stat-val" id="stat-total-conflicts">-</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card border-cyan">
+                        <div class="stat-icon bg-cyan">
+                            <i class="fa-solid fa-id-card"></i>
+                        </div>
+                        <div class="stat-data">
+                            <h3>Drivers & Vehicles</h3>
+                            <span class="stat-val" id="stat-drivers-vehicles">-</span>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="dashboard-layouts">
+                    <!-- Right/Left Split -->
+                    <div class="col-left">
+                        <!-- Simulation Logs -->
+                        <div class="card log-card">
+                            <div class="card-header">
+                                <h2><i class="fa-solid fa-terminal"></i> Simulation Execution Log</h2>
+                                <span class="badge" id="log-count">0 events</span>
+                            </div>
+                            <div class="card-body log-container" id="log-console">
+                                <div class="log-placeholder">
+                                    <i class="fa-solid fa-code"></i>
+                                    <p>No simulation run yet. Click "Trigger Simulation" to populate database and view matching logs.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Conflict Distribution -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h2><i class="fa-solid fa-chart-pie"></i> Conflict Types Breakdown</h2>
+                            </div>
+                            <div class="card-body conflict-breakdown">
+                                <div class="breakdown-item">
+                                    <div class="item-header">
+                                        <span><i class="fa-solid fa-user-slash text-red"></i> Driver Scarcity (No Driver Nearby)</span>
+                                        <span id="pct-scarcity">0</span>
+                                    </div>
+                                    <div class="progress-bar"><div class="progress bg-red" id="bar-scarcity" style="width: 0%"></div></div>
+                                </div>
+                                <div class="breakdown-item">
+                                    <div class="item-header">
+                                        <span><i class="fa-solid fa-users-rectangle text-gold"></i> Capacity Exceeded (Passenger Overload)</span>
+                                        <span id="pct-capacity">0</span>
+                                    </div>
+                                    <div class="progress-bar"><div class="progress bg-gold" id="bar-capacity" style="width: 0%"></div></div>
+                                </div>
+                                <div class="breakdown-item">
+                                    <div class="item-header">
+                                        <span><i class="fa-solid fa-copy text-purple"></i> Double Booking (Duplicate Requests)</span>
+                                        <span id="pct-double">0</span>
+                                    </div>
+                                    <div class="progress-bar"><div class="progress bg-purple" id="bar-double" style="width: 0%"></div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-right">
+                        <!-- Map Preview -->
+                        <div class="card map-preview-card">
+                            <div class="card-header">
+                                <h2><i class="fa-solid fa-map"></i> Bengaluru Grid Simulation (12.97° N, 77.59° E)</h2>
+                                <button class="btn btn-sm btn-secondary" onclick="document.querySelector('[data-tab=map]').click()">Expand Map</button>
+                            </div>
+                            <div class="card-body map-container-body">
+                                <canvas id="map-preview-canvas" width="450" height="300"></canvas>
+                                <div class="map-legend">
+                                    <span><span class="legend-dot bg-cyan"></span> Driver</span>
+                                    <span><span class="legend-dot bg-green"></span> Completed Match</span>
+                                    <span><span class="legend-dot bg-red"></span> Conflict</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Conflicts -->
+                        <div class="card table-card">
+                            <div class="card-header">
+                                <h2><i class="fa-solid fa-shield-halved"></i> Live Conflict Resolution Log</h2>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Type</th>
+                                                <th>Entity ID</th>
+                                                <th>Details & Resolution Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tbl-recent-conflicts">
+                                            <tr>
+                                                <td colspan="3" class="text-center text-muted">No conflicts recorded yet.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Map View Tab -->
+            <div class="tab-content" id="tab-map">
+                <div class="card full-height-card">
+                    <div class="card-header">
+                        <h2><i class="fa-solid fa-map-location-dot"></i> Real-time Spatial Ride Matching Visualization</h2>
+                        <div class="map-controls">
+                            <button class="btn btn-secondary" id="btn-toggle-animation"><i class="fa-solid fa-pause"></i> Pause Animation</button>
+                        </div>
+                    </div>
+                    <div class="card-body map-fullscreen-body">
+                        <div class="map-layout">
+                            <div class="map-canvas-container">
+                                <canvas id="map-full-canvas" width="800" height="500"></canvas>
+                            </div>
+                            <div class="map-live-sidebar">
+                                <h3>Active Ride Tracking</h3>
+                                <div class="active-rides-list" id="active-rides-feed">
+                                    <div class="feed-placeholder">
+                                        No active rides. Run simulation to seed map events.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Conflicts Ledger Tab -->
+            <div class="tab-content" id="tab-conflicts">
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fa-solid fa-triangle-exclamation text-red"></i> System Integrity & Conflict Resolution Ledger</h2>
+                        <p class="card-subtitle">Showing all resolved scheduling conflicts tracked via MySQL constraints & service validation rules</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Conflict ID</th>
+                                        <th>Request ID</th>
+                                        <th>Target Driver</th>
+                                        <th>Type</th>
+                                        <th>Detailed Diagnostics</th>
+                                        <th>Resolution Action</th>
+                                        <th>Resolved At</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbl-all-conflicts">
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted">No conflicts found. Run simulation.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ride Ledger Tab -->
+            <div class="tab-content" id="tab-rides">
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fa-solid fa-receipt"></i> Completed Rides & Financial Settlement Ledger</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Ride ID</th>
+                                        <th>Rider</th>
+                                        <th>Driver</th>
+                                        <th>Vehicle Model</th>
+                                        <th>Distance</th>
+                                        <th>Fare</th>
+                                        <th>Payment Status</th>
+                                        <th>Rider Rating</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbl-all-rides">
+                                    <tr>
+                                        <td colspan="8" class="text-center text-muted">No records found. Seed data using simulation.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Schema Tab -->
+            <div class="tab-content" id="tab-schema">
+                <div class="schema-layout">
+                    <!-- Visual Entity Relationships -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2><i class="fa-solid fa-sitemap"></i> Relational Database Schema Design (10+ Foreign Keys)</h2>
+                        </div>
+                        <div class="card-body er-diagram-container">
+                            <div class="er-nodes">
+                                <!-- Users Node -->
+                                <div class="er-node border-purple" id="node-users">
+                                    <div class="node-title bg-purple">users (User Entity)</div>
+                                    <div class="node-fields">
+                                        <span><strong>id</strong> : BIGINT [PK]</span>
+                                        <span>name : VARCHAR(255)</span>
+                                        <span>email : VARCHAR(255) [UNIQUE]</span>
+                                        <span>phone : VARCHAR(255)</span>
+                                        <span>role : VARCHAR(50) [RIDER/DRIVER]</span>
+                                        <span>rating : DOUBLE</span>
+                                        <span>balance : DOUBLE</span>
+                                    </div>
+                                </div>
+
+                                <!-- Vehicles Node -->
+                                <div class="er-node border-cyan" id="node-vehicles">
+                                    <div class="node-title bg-cyan">vehicles (Vehicle Entity)</div>
+                                    <div class="node-fields">
+                                        <span><strong>id</strong> : BIGINT [PK]</span>
+                                        <span><i class="fa-solid fa-key text-gold"></i> driver_id : BIGINT [FK -> users]</span>
+                                        <span>make : VARCHAR(255)</span>
+                                        <span>model : VARCHAR(255)</span>
+                                        <span>license_plate : VARCHAR [UNIQUE]</span>
+                                        <span>capacity : INT</span>
+                                        <span>vehicle_type : VARCHAR [SEDAN/SUV...]</span>
+                                    </div>
+                                </div>
+
+                                <!-- DriverAvailability Node -->
+                                <div class="er-node border-cyan" id="node-availability">
+                                    <div class="node-title bg-cyan">driver_availability</div>
+                                    <div class="node-fields">
+                                        <span><strong>id</strong> : BIGINT [PK]</span>
+                                        <span><i class="fa-solid fa-key text-gold"></i> driver_id : BIGINT [FK -> users, UNIQUE]</span>
+                                        <span>current_latitude : DOUBLE</span>
+                                        <span>current_longitude : DOUBLE</span>
+                                        <span>is_available : BOOLEAN</span>
+                                        <span>last_updated_at : DATETIME</span>
+                                    </div>
+                                </div>
+
+                                <!-- Ride Requests Node -->
+                                <div class="er-node border-yellow" id="node-requests">
+                                    <div class="node-title bg-yellow">ride_requests</div>
+                                    <div class="node-fields">
+                                        <span><strong>id</strong> : BIGINT [PK]</span>
+                                        <span><i class="fa-solid fa-key text-gold"></i> rider_id : BIGINT [FK -> users]</span>
+                                        <span>start_latitude : DOUBLE</span>
+                                        <span>start_longitude : DOUBLE</span>
+                                        <span>end_latitude : DOUBLE</span>
+                                        <span>end_longitude : DOUBLE</span>
+                                        <span>requested_type : VARCHAR</span>
+                                        <span>status : VARCHAR [PENDING/MATCHED...]</span>
+                                        <span>passenger_count : INT</span>
+                                        <span>requested_at : DATETIME</span>
+                                    </div>
+                                </div>
+
+                                <!-- Rides Node -->
+                                <div class="er-node border-green" id="node-rides">
+                                    <div class="node-title bg-green">rides (Ride Entity)</div>
+                                    <div class="node-fields">
+                                        <span><strong>id</strong> : BIGINT [PK]</span>
+                                        <span><i class="fa-solid fa-key text-gold"></i> request_id : BIGINT [FK -> requests, UNIQUE]</span>
+                                        <span><i class="fa-solid fa-key text-gold"></i> rider_id : BIGINT [FK -> users]</span>
+                                        <span><i class="fa-solid fa-key text-gold"></i> driver_id : BIGINT [FK -> users]</span>
+                                        <span><i class="fa-solid fa-key text-gold"></i> vehicle_id : BIGINT [FK -> vehicles]</span>
+                                        <span>status : VARCHAR</span>
+                                        <span>fare : DOUBLE</span>
+                                        <span>start_time : DATETIME</span>
+                                        <span>end_time : DATETIME</span>
+                                    </div>
+                                </div>
+
+                                <!-- Payments Node -->
+                                <div class="er-node border-green" id="node-payments">
+                                    <div class="node-title bg-green">payments</div>
+                                    <div class="node-fields">
+                                        <span><strong>id</strong> : BIGINT [PK]</span>
+                                        <span><i class="fa-solid fa-key text-gold"></i> ride_id : BIGINT [FK -> rides, UNIQUE]</span>
+                                        <span><i class="fa-solid fa-key text-gold"></i> payer_id : BIGINT [FK -> users]</span>
+                                        <span>amount : DOUBLE</span>
+                                        <span>status : VARCHAR [PENDING/COMPLETED...]</span>
+                                        <span>payment_method : VARCHAR</span>
+                                        <span>payment_time : DATETIME</span>
+                                    </div>
+                                </div>
+
+                                <!-- Reviews Node -->
+                                <div class="er-node border-purple" id="node-reviews">
+                                    <div class="node-title bg-purple">reviews</div>
+                                    <div class="node-fields">
+                                        <span><strong>id</strong> : BIGINT [PK]</span>
+                                        <span><i class="fa-solid fa-key text-gold"></i> ride_id : BIGINT [FK -> rides]</span>
+                                        <span><i class="fa-solid fa-key text-gold"></i> reviewer_id : BIGINT [FK -> users]</span>
+                                        <span><i class="fa-solid fa-key text-gold"></i> reviewee_id : BIGINT [FK -> users]</span>
+                                        <span>rating : INT</span>
+                                        <span>comment : VARCHAR(500)</span>
+                                        <span>created_at : DATETIME</span>
+                                    </div>
+                                </div>
+
+                                <!-- RideMatchConflicts Node -->
+                                <div class="er-node border-red" id="node-conflicts">
+                                    <div class="node-title bg-red">ride_match_conflicts</div>
+                                    <div class="node-fields">
+                                        <span><strong>id</strong> : BIGINT [PK]</span>
+                                        <span><i class="fa-solid fa-key text-gold"></i> request_id : BIGINT [FK -> requests]</span>
+                                        <span><i class="fa-solid fa-key text-gold"></i> driver_id : BIGINT [FK -> users, NULL]</span>
+                                        <span>conflict_type : VARCHAR</span>
+                                        <span>details : VARCHAR(500)</span>
+                                        <span>resolution_action : VARCHAR(255)</span>
+                                        <span>resolved_at : DATETIME</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- DB integrity explanation -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2><i class="fa-solid fa-shield-halved"></i> Data Integrity & System Design Highlights</h2>
+                        </div>
+                        <div class="card-body text-layout">
+                            <h3>Foreign Key Constraints Implemented (Total: 14)</h3>
+                            <ol class="fk-list">
+                                <li><code>fk_vehicles_driver</code>: Maintains that every vehicle is driven by a valid user profile.</li>
+                                <li><code>fk_availability_driver</code>: Assures location records map to registered user entities.</li>
+                                <li><code>fk_requests_rider</code>: Connects bookings to correct customer entity.</li>
+                                <li><code>fk_rides_request</code>: Avoids orphan rides by securing 1-to-1 matching with requests.</li>
+                                <li><code>fk_rides_rider</code>: Double-verifies passenger profiles for security audits.</li>
+                                <li><code>fk_rides_driver</code>: Solidifies driver record accountability on historical rides.</li>
+                                <li><code>fk_rides_vehicle</code>: Tracks vehicle usage integrity on ride-matching outcomes.</li>
+                                <li><code>fk_payments_ride</code>: Locks transaction history mapping directly to verified ride settlements.</li>
+                                <li><code>fk_payments_payer</code>: Assures debit authorization is tied to matching payer ID.</li>
+                                <li><code>fk_reviews_ride</code>: Links reviews only to completed and verified rides.</li>
+                                <li><code>fk_reviews_reviewer</code>: Enforces valid author attributes.</li>
+                                <li><code>fk_reviews_reviewee</code>: Protects target customer ratings.</li>
+                                <li><code>fk_conflicts_request</code>: Details diagnostics precisely against the origin request.</li>
+                                <li><code>fk_conflicts_driver</code>: Connects driver scheduling constraints to logs.</li>
+                            </ol>
+                            <h3>Object-Oriented Design Principles Used</h3>
+                            <ul>
+                                <li><strong>Polymorphism / Roles:</strong> Unified <code>User</code> table acting as Riders and Drivers, configured dynamically.</li>
+                                <li><strong>Encapsulation:</strong> Repository layer abstracts data operations completely from business models.</li>
+                                <li><strong>Conflict Strategy Design:</strong> Modular, robust services implementing real-time algorithms (Distance Proximity, Capacity Filtration, Concurrent Safety).</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users & Vehicles Tab -->
+            <div class="tab-content" id="tab-users">
+                <div class="dashboard-layouts">
+                    <div class="col-left">
+                        <div class="card">
+                            <div class="card-header">
+                                <h2><i class="fa-solid fa-circle-user text-purple"></i> Riders Directory</h2>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Rider ID</th>
+                                                <th>Name</th>
+                                                <th>Email</th>
+                                                <th>Rating</th>
+                                                <th>Wallet Balance</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tbl-all-riders">
+                                            <tr>
+                                                <td colspan="5" class="text-center text-muted">No riders loaded.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-right">
+                        <div class="card">
+                            <div class="card-header">
+                                <h2><i class="fa-solid fa-id-card text-cyan"></i> Drivers & Registered Vehicles</h2>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Driver ID</th>
+                                                <th>Name</th>
+                                                <th>Vehicle Model</th>
+                                                <th>Plate</th>
+                                                <th>Type</th>
+                                                <th>Capacity</th>
+                                                <th>Rating</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tbl-all-drivers">
+                                            <tr>
+                                                <td colspan="7" class="text-center text-muted">No drivers loaded.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/app.js"></script>
+</body>
+</html>
